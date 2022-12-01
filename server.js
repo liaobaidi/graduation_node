@@ -7,5 +7,5 @@ myUse(app, express)
 
 app.listen(8080, () => {
 	console.log(`Welcome to Experiment Management System !`)
-	console.table({ author: 'liaobaidi', name: 'Experiment Management System', gitee: 'xxx', github: 'xxx' })
+	console.table({ author: 'liaobaidi', name: 'Experiment Management System', gitee: 'xxx', github: 'https://github.com/liaobaidi/graduation_node' })
 })
