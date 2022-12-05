@@ -1,17 +1,22 @@
 const { my_login } = require('../handlers/sys')
+const { my_userlist } = require('../handlers/user')
+
 module.exports.createRouter = function (app, express) {
 	const router = express.Router()
 
 	/**
 	 * 登录
 	 */
-	router.post('/login', (req, res) => my_login(req, res))
+	router.post('/sys/login', (req, res) => my_login(req, res))
 
-
-  /**
+	/**
 	 * 修改密码
 	 */
-	router.post('/update', (req, res) => my_update(req, res))
+	router.post('/sys/update', (req, res) => my_update(req, res))
 
+	/**
+	 * 用户列表
+	 */
+	router.get('/user/list', (req, res) => my_userlist(req, res))
 	return router
 }
