@@ -17,6 +17,6 @@ module.exports.createRouter = function (app, express) {
 	/**
 	 * 用户列表
 	 */
-	router.get('/user/list', (req, res) => my_userlist(req, res))
+	router.post('/user/list', (req, res) => my_userlist(req, res))
 	return router
 }
