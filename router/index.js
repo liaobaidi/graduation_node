@@ -1,4 +1,4 @@
-const { my_login, my_logout } = require('../handlers/sys')
+const { my_login, my_logout, my_update } = require('../handlers/sys')
 const { my_userlist } = require('../handlers/user')
 
 module.exports.createRouter = function (app, express) {
@@ -22,7 +22,7 @@ module.exports.createRouter = function (app, express) {
 	/**
 	 * 登出
 	 */
-	router.post('/user/logout', (req, res) => my_logout(req, res))
+	router.post('/sys/logout', (req, res) => my_logout(req, res))
 
 	return router
 }
