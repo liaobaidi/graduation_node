@@ -19,7 +19,7 @@ module.exports.my_userlist = function (req, res) {
 		})
 	}
 	const { page, pageSize, account } = req.body
-	let sql = 'select id, username, account, class_id from sys_user_liao'
+	let sql = 'select id, username, account, class_id, identity from sys_user_liao'
 	if(account) sql = sql + ' where account='+account
 	connection.query(sql, (err, result) => {
 		if (err) {
