@@ -1,5 +1,5 @@
 const { my_login, my_logout, my_update } = require('../handlers/sys')
-const { my_userlist } = require('../handlers/user')
+const { my_userlist, my_userExport, my_userInsert } = require('../handlers/user')
 
 module.exports.createRouter = function (app, express) {
 	const router = express.Router()
@@ -23,6 +23,16 @@ module.exports.createRouter = function (app, express) {
 	 * 登出
 	 */
 	router.post('/sys/logout', (req, res) => my_logout(req, res))
+
+	/**
+	 * 用户列表导出
+	 */
+	router.post('/user/export', (req, res) => my_userExport(req, res))
+
+	/**
+	 * 添加用户
+	 */
+	router.post('/user/insert', (req, res) => my_userInsert(req, res))
 
 	return router
 }

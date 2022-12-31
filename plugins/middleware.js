@@ -1,5 +1,7 @@
 const cors = require('cors')
 const { createRouter } = require('../router')
+const { verify } = require('../handlers/sys')
+const res = require('express/lib/response')
 // 中间件列表
 module.exports.myUse = function (app, express) {
 	// cors跨域处理

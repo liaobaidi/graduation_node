@@ -61,6 +61,7 @@ module.exports.my_update = function (req, res) {
 			})
 			return
 		}
+		console.log(result, psw);
 		const flag = result.some((item) => {
 			if (item.account === account) {
 				if (item.psw !== psw) {
