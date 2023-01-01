@@ -1,5 +1,9 @@
 const connection = require('../../plugins/config')
 const { verify_token } = require('../../utils/token')
+const path = require('path')
+const xlsx = require('node-xlsx')
+const multiparty = require('multiparty')
+const fs = require('fs')
 module.exports.my_userlist = function (req, res) {
   console.log('/user/list')
   const { authorization } = req.headers
@@ -129,4 +133,33 @@ module.exports.my_userInsert = function (req, res) {
       })
     })
   })
+}
+module.exports.my_listInsert = function (req, res) {
+  console.log('/user/import')
+  /* 生成multiparty对象，并配置上传目标路径 */
+  let form = new multiparty.Form()
+  // 设置编码
+  form.encoding = 'utf-8'
+  form.parse(req, function (err, fields, files) {
+    if (err) {
+      console.log(err)
+      res.send({ code: 10001, info: null, msg: '上传失败！' })
+      return
+    }
+    const inputFile = files.file[0]
+    const newPath = path.join(__dirname, '../../public', 'uploads') + '\\' + inputFile.originalFilename //oldPath  不得作更改，使用默认上传路径就好
+    // 同步重命名文件名 fs.renameSync(oldPath, newPath)
+    fs.readFile(inputFile.path, function (err, data) {
+      if (err) throw err
+      fs.writeFile(newPath, data, function (err) {
+        if (err) throw err
+        res.send({ code: 200, info: true, msg: '上传成功！' })
+      })
+    })
+  })
+  // res.send({
+  //   code: 200,
+  //   info: req.files,
+  //   msg: '导入成功！'
+  // })
 }
