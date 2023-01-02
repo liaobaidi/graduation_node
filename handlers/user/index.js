@@ -1,7 +1,7 @@
 const connection = require('../../plugins/config')
 const { verify_token } = require('../../utils/token')
 const path = require('path')
-const xlsx = require('node-xlsx')
+const xlsx = require('node-xlsx').default
 const multiparty = require('multiparty')
 const fs = require('fs')
 module.exports.my_userlist = function (req, res) {
@@ -136,6 +136,15 @@ module.exports.my_userInsert = function (req, res) {
 }
 module.exports.my_listInsert = function (req, res) {
   console.log('/user/import')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
   /* 生成multiparty对象，并配置上传目标路径 */
   let form = new multiparty.Form()
   // 设置编码
@@ -149,17 +158,71 @@ module.exports.my_listInsert = function (req, res) {
     const inputFile = files.file[0]
     const newPath = path.join(__dirname, '../../public', 'uploads') + '\\' + inputFile.originalFilename //oldPath  不得作更改，使用默认上传路径就好
     // 同步重命名文件名 fs.renameSync(oldPath, newPath)
-    fs.readFile(inputFile.path, function (err, data) {
-      if (err) throw err
-      fs.writeFile(newPath, data, function (err) {
-        if (err) throw err
-        res.send({ code: 200, info: true, msg: '上传成功！' })
+    const file_data = fs.readFileSync(inputFile.path)
+    fs.writeFileSync(newPath, file_data)
+    const list = xlsx.parse(newPath)
+    const admins = list[0].data.filter(item => item[4] === 'admin')
+    const teachers = list[0].data.filter(item => item[4] === 'teacher')
+    const students = list[0].data.filter(item => item[4] === 'student')
+    console.log(admins, teachers, students)
+    connection.query(`select id, identity from sys_user_liao`, (err, result) => {
+      if (err) {
+        return res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+      }
+      let admin_id = result.filter(item => item.identity === 'admin').at(-1).id + 1
+      let teacher_id = result.filter(item => item.identity === 'teacher').at(-1).id + 1
+      let student_id = result.filter(item => item.identity === 'student').at(-1).id + 1
+      admins.forEach(async item => {
+        const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${admin_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
+        console.log(sql)
+        await connection.query(sql)
+        admin_id++
+      })
+      teachers.forEach(async item => {
+        const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${teacher_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
+        console.log(sql)
+        await connection.query(sql)
+        teacher_id++
+      })
+      students.forEach(async item => {
+        const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${student_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
+        console.log(sql)
+        await connection.query(sql)
+        student_id++
       })
     })
+    res.send({ code: 200, info: true, msg: '导入成功！' })
   })
-  // res.send({
-  //   code: 200,
-  //   info: req.files,
-  //   msg: '导入成功！'
-  // })
+}
+module.exports.my_deleteUser = function(req, res) {
+  console.log('/user/import')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { id } = req.body
+  const sql = `delete from sys_user_liao where id=${id}`
+  connection.query(sql, (err, result) => {
+    if (err) {
+      return res.send({
+        code: 10001,
+        info: null,
+        msg: '[SELECT ERROR] - ' + err.message
+      })
+    }
+    res.send({
+      code: 200,
+      info: true,
+      msg: '删除成功！'
+    })
+  })
 }
