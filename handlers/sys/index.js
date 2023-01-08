@@ -20,6 +20,7 @@ module.exports.my_login = function (req, res) {
 					code: 200,
 					info: {
 						userInfo: {
+							account: result[i].account,
 							username: result[i].username,
 							identity: result[i].identity
 						},

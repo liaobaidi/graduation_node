@@ -198,7 +198,7 @@ module.exports.my_listInsert = function (req, res) {
     res.send({ code: 200, info: true, msg: '导入成功！' })
   })
 }
-module.exports.my_deleteUser = function(req, res) {
+module.exports.my_deleteUser = function (req, res) {
   console.log('/user/import')
   const { authorization } = req.headers
   const data = verify_token(authorization)
@@ -225,4 +225,72 @@ module.exports.my_deleteUser = function(req, res) {
       msg: '删除成功！'
     })
   })
+}
+module.exports.my_userInfo = function (req, res) {
+  console.log('/user/info')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { account } = req.body
+  const sql = `select * from sys_user_info where account='${account}'`
+  connection.query(sql, (err, results) => {
+    if (err) {
+      return res.send({
+        code: 10001,
+        info: null,
+        msg: '[SELECT ERROR] - ' + err.message
+      })
+    }
+    res.send({
+      code: 200,
+      info: results,
+      msg: '获取成功！'
+    })
+  })
+}
+module.exports.my_userUpdate = function (req, res) {
+  console.log('/user/saveOrUpdate')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { id, username, account, email, phone, url, brith, gender } = req.body
+  if (id) {
+    // 修改信息
+    const sql = `update sys_user_info set username='${username}', email='${email}', phone='${phone}', url='${url}', brith='${brith}', gender='${gender}' where account='${account}'`
+    console.log(sql)
+    connection.query(sql, (err, results) => {
+      if (err) throw err
+      res.send({
+        code: 200,
+        info: true,
+        msg: '修改成功！'
+      })
+    })
+    return
+  } else {
+    // 插入信息
+    connection.query(`select id from sys_user_info`, (err, results) => {
+      const nextId = results[results.length - 1] + 1
+      const sql = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${nextId}, '${username}', '${gender}', '${email}', '${phone}', '${brith}', '${url}', '${account}')`
+      connection.query(sql, () => {
+        res.send({
+          code: 200,
+          info: true,
+          msg: '修改成功！'
+        })
+      })
+    })
+  }
 }
