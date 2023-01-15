@@ -9,6 +9,7 @@ const {
   my_userUpdate
 } = require('../handlers/user')
 const { uploadFile } = require('../handlers/utils')
+const { my_experimentlist, my_appointExperiment, my_appointList, my_cancelAppoint } = require('../handlers/experiment')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -64,5 +65,25 @@ module.exports.createRouter = function (app, express) {
    * 上传图片接口
    */
   router.post('/upload/image', (req, res) => uploadFile(req, res))
+
+  /**
+   * 实验室列表
+   */
+  router.post('/experiment/list', (req, res) => my_experimentlist(req, res))
+
+  /**
+   * 预约实验室
+   */
+  router.post('/experiment/appoint', (req, res) => my_appointExperiment(req, res))
+
+  /**
+   * 预约列表
+   */
+  router.get('/appoint/list', (req, res) => my_appointList(req, res))
+
+  /**
+   * 取消预约
+   */
+  router.post('/cancel/appoint', (req, res) => my_cancelAppoint(req, res))
   return router
 }

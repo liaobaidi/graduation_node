@@ -1,6 +1,9 @@
 const express = require('express')
 const { myUse } = require('./plugins/middleware.js')
 
+// 定时任务
+require('./handlers/timer')
+
 const app = express()
 
 myUse(app, express)
