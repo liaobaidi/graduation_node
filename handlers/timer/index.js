@@ -26,7 +26,7 @@ schedule.scheduleJob(rule, () => {
     }
     for (let i = 0; i < updateArr.length; i++) {
       connection.query(
-        `update sys_experiment_list set one_two=${updateArr[i].one_two}, three_four=${updateArr[i].three_four}, five=${updateArr[i].five}, six_seven=${updateArr[i].six_seven}, eight_nine=${updateArr[i].eight_nine}, ten_twi=${updateArr[i].ten_twi} where ID=${updateArr[i].ID}`
+        `update sys_experiment_list set one_two=${updateArr[i].one_two}, three_four=${updateArr[i].three_four}, five=${updateArr[i].five}, six_seven=${updateArr[i].six_seven}, eight_nine=${updateArr[i].eight_nine}, ten_twi=${updateArr[i].ten_twi}, time='${updateArr[i].time}' where ID=${updateArr[i].ID}`
       )
     }
   })

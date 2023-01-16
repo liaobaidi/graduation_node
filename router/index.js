@@ -8,8 +8,9 @@ const {
   my_userInfo,
   my_userUpdate
 } = require('../handlers/user')
-const { uploadFile } = require('../handlers/utils')
+const { uploadFile, uploadProtocol } = require('../handlers/utils')
 const { my_experimentlist, my_appointExperiment, my_appointList, my_cancelAppoint } = require('../handlers/experiment')
+const { my_noticeList, my_noticeInfo, my_noticeUpdate } = require('../handlers/message')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -85,5 +86,25 @@ module.exports.createRouter = function (app, express) {
    * 取消预约
    */
   router.post('/cancel/appoint', (req, res) => my_cancelAppoint(req, res))
+
+  /**
+   * 公告列表
+   */
+  router.post('/notice/list', (req, res) => my_noticeList(req, res))
+
+  /**
+   * 公告详情
+   */
+  router.post('/notice/info', (req, res) => my_noticeInfo(req, res))
+
+  /**
+   * 添加或修改公告
+   */
+  router.post('/notice/updateOrSave', (req, res) => my_noticeUpdate(req, res))
+
+  /**
+   * 上传附件
+   */
+  router.post('/upload/protocol', (req, res) => uploadProtocol(req, res))
   return router
 }

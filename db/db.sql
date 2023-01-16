@@ -49,3 +49,14 @@ create table if not exists `sys_appointment_list`
 `time` varchar(16) not null comment '日期',
 `name` varchar(16) not null comment '实验室名称'
 ) comment '已预约列表';
+
+-- 公告列表
+create table if not exists `sys_notice_list`
+(
+`id` int not null auto_increment comment '唯一标识' primary key,
+`title` varchar(64) not null comment '标题',
+`author` varchar(16) not null comment '作者',
+`info` text not null comment '内容',
+`date` varchar(32) not null comment '日期',
+`protocol` varchar(256) null comment '附件'
+) comment '公告列表';
