@@ -9,7 +9,17 @@ const {
   my_userUpdate
 } = require('../handlers/user')
 const { uploadFile, uploadProtocol } = require('../handlers/utils')
-const { my_experimentlist, my_appointExperiment, my_appointList, my_cancelAppoint } = require('../handlers/experiment')
+const {
+  my_experimentlist,
+  my_appointExperiment,
+  my_appointList,
+  my_cancelAppoint,
+  my_appointCancel,
+  my_appointlistPage,
+  my_appointDelete,
+  my_experienceList,
+  my_experienceAdd
+} = require('../handlers/experiment')
 const { my_noticeList, my_noticeInfo, my_noticeUpdate } = require('../handlers/message')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
@@ -106,5 +116,30 @@ module.exports.createRouter = function (app, express) {
    * 上传附件
    */
   router.post('/upload/protocol', (req, res) => uploadProtocol(req, res))
+
+  /**
+   * 预约列表的取消预约
+   */
+  router.post('/cancel/appointlist', (req, res) => my_appointCancel(req, res))
+
+  /**
+   * 分页获取预约列表
+   */
+  router.post('/appoint/list/page', (req, res) => my_appointlistPage(req, res))
+
+  /**
+   * 删除预约记录
+   */
+  router.post('/appoint/delete', (req, res) => my_appointDelete(req, res))
+
+  /**
+   * 实验列表
+   */
+  router.post('/experience/list', (req, res) => my_experienceList(req, res))
+
+  /**
+   * 发布或修改实验
+   */
+  router.post('/experience/saveOrUpdate', (req, res) => my_experienceAdd(req, res))
   return router
 }

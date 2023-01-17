@@ -60,3 +60,12 @@ create table if not exists `sys_notice_list`
 `date` varchar(32) not null comment '日期',
 `protocol` varchar(256) null comment '附件'
 ) comment '公告列表';
+
+-- 实验列表
+create table if not exists `sys_experience_list`
+(
+`id` int not null auto_increment comment '唯一标识' primary key,
+`name` varchar(64) not null comment '实验名称',
+`createTime` varchar(64) not null comment '发布日期',
+`protocol` varchar(256) not null comment '资料'
+) comment '实验列表';

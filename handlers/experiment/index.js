@@ -125,7 +125,7 @@ module.exports.my_appointList = function (req, res) {
       msg: 'token失效'
     })
   }
-  const sql = `select * from sys_appointment_list where account='${data.account}'`
+  const sql = `select * from sys_appointment_list where account='${data.account}' order by time desc`
   connection.query(sql, (err, results) => {
     if (err) {
       res.send({
@@ -181,4 +181,208 @@ module.exports.my_cancelAppoint = function (req, res) {
       })
     })
   })
+}
+
+module.exports.my_appointCancel = function (req, res) {
+  console.log('/cancel/appointlist')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { id, key, name, time } = req.body
+  connection.query(`delete from sys_appointment_list where id=${id}`, err => {
+    if (err) throw err
+    connection.query(`select * from sys_experiment_list where name='${name}' and time='${time}'`, (err, results) => {
+      if (err) throw err
+      let sql = ''
+      if (data.identity === 'student') {
+        sql = `update sys_experiment_list set ${key}=${results[0][key] + 1} where name='${name}' and time='${time}'`
+      } else {
+        sql = `update sys_experiment_list set ${key}=50 where name='${name}' and time='${time}'`
+      }
+      connection.query(sql, err => {
+        if (err) throw err
+        res.send({
+          code: 200,
+          info: true,
+          msg: '取消成功！'
+        })
+      })
+    })
+  })
+}
+
+module.exports.my_appointlistPage = function (req, res) {
+  console.log('/appoint/list/page')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { page, pageSize } = req.body
+  connection.query(
+    `select * from sys_appointment_list where account='${data.account}' order by time desc`,
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+        return
+      }
+      const total = result.length
+      const maxPage = Math.ceil(total / pageSize)
+      let _page = page
+      if (_page > maxPage) _page = maxPage
+      const results = result.slice((_page - 1) * pageSize, (_page - 1) * pageSize + pageSize)
+      res.send({
+        code: 200,
+        info: {
+          items: results,
+          page: _page,
+          pageSize,
+          total,
+          maxPage
+        },
+        msg: 'success'
+      })
+    }
+  )
+}
+
+module.exports.my_appointDelete = function (req, res) {
+  console.log('/appoint/delete')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { id } = req.body
+  connection.query(`delete from sys_appointment_list where id=${id}`, () => {
+    res.send({
+      code: 200,
+      info: true,
+      msg: '删除成功！'
+    })
+  })
+}
+
+module.exports.my_experienceList = function (req, res) {
+  console.log('/experience/list')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { page, pageSize, id } = req.body
+  let sql = `select * from sys_experience_list order by createTime desc`
+  if(id) {
+    sql = `select * from sys_experience_list where id=${id} order by createTime desc`
+  }
+  connection.query(sql, (err, result) => {
+    if (err) {
+      res.send({
+        code: 10001,
+        info: null,
+        msg: '[SELECT ERROR] - ' + err.message
+      })
+      return
+    }
+    const total = result.length
+    const maxPage = Math.ceil(total / pageSize)
+    let _page = page
+    if (_page > maxPage) _page = maxPage
+    const results = result.slice((_page - 1) * pageSize, (_page - 1) * pageSize + pageSize)
+    res.send({
+      code: 200,
+      info: {
+        items: results,
+        page: _page,
+        pageSize,
+        total,
+        maxPage
+      },
+      msg: 'success'
+    })
+  })
+}
+
+module.exports.my_experienceAdd = function (req, res) {
+  console.log('/experience/saveOrUpdate')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { id, name, protocol } = req.body
+  if (id) {
+    // 修改
+    connection.query(
+      `update sys_experience_list set name='${name}', protocol='${protocol}', createTime='${dayjs().format(
+        'YYYY-MM-DD HH:mm:ss'
+      )} where id=${id}`,
+      err => {
+        if (err) {
+          res.send({
+            code: 10001,
+            info: null,
+            msg: '[SELECT ERROR] - ' + err.message
+          })
+          return
+        }
+        res.send({
+          code: 200,
+          info: true,
+          msg: '修改成功！'
+        })
+      }
+    )
+    return
+  } else {
+    // 发布
+    connection.query(`select id from sys_experience_list`, (err, results) => {
+      if (err) {
+        res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+        return
+      }
+      const nextId = results.length ? results[results.length - 1].id + 1 : 1000
+      const sql = `insert into sys_experience_list (id, name, createTime, protocol) values (${nextId}, '${name}', '${dayjs().format(
+        'YYYY-MM-DD HH:mm:ss'
+      )}', '${protocol}')`
+      connection.query(sql, err => {
+        if (err) throw err
+        res.send({
+          code: 200,
+          info: true,
+          msg: '发布成功！'
+        })
+      })
+    })
+  }
 }
