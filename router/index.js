@@ -21,6 +21,7 @@ const {
   my_experienceAdd
 } = require('../handlers/experiment')
 const { my_noticeList, my_noticeInfo, my_noticeUpdate } = require('../handlers/message')
+const { my_homeworkList, my_homeworkSaveOrUpdate, my_homeworkCheck, my_homeworkCommit, my_homeworkDetail, my_homeworkDoneList } = require('../handlers/homework')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -141,5 +142,35 @@ module.exports.createRouter = function (app, express) {
    * 发布或修改实验
    */
   router.post('/experience/saveOrUpdate', (req, res) => my_experienceAdd(req, res))
+
+  /**
+   * 作业列表
+   */
+  router.post('/homework/list', (req, res) => my_homeworkList(req, res))
+
+  /**
+   * 发布或修改作业
+   */
+  router.post('/homework/saveOrUpdate', (req, res) => my_homeworkSaveOrUpdate(req, res))
+
+  /**
+   * 批改作业
+   */
+  router.post('/homework/check', (req, res) => my_homeworkCheck(req, res))
+
+  /**
+   * 提交/修改作业
+   */
+  router.post('/homework/commit', (req, res) => my_homeworkCommit(req, res))
+
+  /**
+   * 作业详情
+   */
+  router.post('/homework/detail', (req, res) => my_homeworkDetail(req, res))
+
+  /**
+   * 已完成列表
+   */
+  router.post('/homework/done/list', (req, res) => my_homeworkDoneList(req, res))
   return router
 }

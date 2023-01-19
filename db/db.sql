@@ -23,7 +23,8 @@ create table if not exists `sys_user_info`
 `gender` varchar(4) not null comment '性别',
 `email` varchar(32) not null comment '邮箱',
 `phone` varchar(11) null comment '联系电话',
-`brith` date not null comment '生日'
+`brith` date not null comment '生日',
+`class_id` int comment '班级ID'
 ) comment '用户详情表';
 
 -- 实验室列表
@@ -69,3 +70,37 @@ create table if not exists `sys_experience_list`
 `createTime` varchar(64) not null comment '发布日期',
 `protocol` varchar(256) not null comment '资料'
 ) comment '实验列表';
+
+-- 作业列表
+create table if not exists `sys_homework_list`
+(
+`id` int not null auto_increment comment '唯一标识' primary key,
+`author_id` varchar(32) not null comment '发布者工号',
+`title` varchar(64) not null comment '标题',
+`info` text not null comment '内容',
+`protocol` varchar(256) null comment '附件',
+`class_id` int null comment '班级ID',
+`date` varchar(32) not null comment '截至日期'
+) comment '作业列表';
+
+-- 已完成列表
+create table if not exists `sys_done_list`
+(
+`id` int not null auto_increment comment '唯一标识' primary key,
+`account` varchar(16) not null comment '学号',
+`date` varchar(32) not null comment '完成日期',
+`homework_id` varchar(16) not null comment '作业ID',
+`protocol` varchar(256) null comment '附件',
+`class_id` int comment '班级ID',
+`score` varchar(16) null comment '成绩',
+`desc` text null comment '评语',
+`status` int not null comment '状态(1：未批改，2：已批改)'
+) comment '已完成列表';
+
+-- 班级列表
+create table if not exists `sys_class_list`
+(
+`id` int not null auto_increment comment '唯一标识' primary key,
+`class_id` varchar(16) not null comment '班级ID',
+`class_view` varchar(32) not null comment '班级名称'
+) comment '班级列表';
