@@ -15,12 +15,16 @@ module.exports.my_homeworkList = function (req, res) {
   }
   const { page, pageSize, class_id } = req.body
   let sql = ''
-  if (data.identity !== 'student') {
+  if (data.identity === 'teacher') {
+    sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) where u.account='${
+      data.account
+    }' ${class_id ? 'and h.class_id=' + class_id : ''} order by h.date asc`
+  } else if (data.identity === 'admin') {
     sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) ${
       class_id ? 'where h.class_id=' + class_id : ''
     } order by h.date asc`
   } else {
-    sql = `select * from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) where h.class_id=u.class_id order by h.date asc`
+    sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) where h.class_id=${class_id} order by h.date asc`
   }
   connection.query(sql, (err, result) => {
     if (err) {
@@ -117,7 +121,7 @@ module.exports.my_homeworkCheck = function (req, res) {
     })
   }
   const { id, score, desc } = req.body
-  connection.query(`update sys_done_list set status=2, score='${score}', desc='${desc}' where id=${id}`, err => {
+  connection.query(`update sys_done_list set status=2, score='${score}', \`desc\`='${desc}' where id=${id}`, err => {
     if (err) {
       res.send({
         code: 10001,
@@ -159,9 +163,9 @@ module.exports.my_homeworkCommit = function (req, res) {
       // 提交作业
       const nextId = ids.length ? ids[ids.length - 1].id + 1 : 1000
       connection.query(
-        `insert into sys_done_list (id, account, class_id, homework_id, protocol, date, status) values (${nextId}, '${account}', ${class_id}), ${homework_id}, '${protocol}', '${dayjs().format(
+        `insert into sys_done_list (id, account, class_id, homework_id, protocol, date, status) values (${nextId}, '${account}', ${class_id}, ${homework_id}, '${protocol}', '${dayjs().format(
           'YYYY-MM-DD HH:mm:ss'
-        )}', 1`,
+        )}', 1)`,
         error => {
           if (error) {
             res.send({
@@ -181,7 +185,7 @@ module.exports.my_homeworkCommit = function (req, res) {
     } else {
       // 修改作业
       connection.query(
-        `update sys_done_list set protocol='${protocol}' where homewrok_id=${homework_id} and class_id=${class_id} and account='${account}'`,
+        `update sys_done_list set protocol='${protocol}' where homework_id=${homework_id} and class_id=${class_id} and account='${account}'`,
         err => {
           if (err) {
             res.send({
@@ -213,10 +217,10 @@ module.exports.my_homeworkDetail = function (req, res) {
       msg: 'token失效'
     })
   }
-  const { id, homework_id } = req.body
+  const { id, homework_id, status } = req.body
   if (id) {
     // 从作业已完成列表点进来的
-    const sql = `select h.title, c.class_view, u.account, u.username, d.protocol, d.score, d.desc from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) inner join sys_done_list d on (d.account=h.author_id and d.homework_id=h.id) where d.id=${id}`
+    const sql = `select h.title, h.info, c.class_view, u.account, u.username, d.protocol, d.score, d.desc from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_done_list d on (d.homework_id=h.id) inner join sys_user_liao u on (d.account=u.account) where d.id=${id}`
     connection.query(sql, (err, results) => {
       if (err) {
         res.send({
@@ -235,9 +239,10 @@ module.exports.my_homeworkDetail = function (req, res) {
   } else {
     // 从作业列表进来的
     if (data.identity === 'student') {
-      connection.query(
-        `select title, info, protocol from sys_homework_list where id=${homework_id}`,
-        (err, results) => {
+      if (status) {
+        // 已批改
+        const sql = `select h.title, h.info, c.class_view, u.account, u.username, d.protocol, d.score, d.desc from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_done_list d on (d.homework_id=h.id) inner join sys_user_liao u on (d.account=u.account) where d.homework_id=${homework_id} and d.account='${data.account}'`
+        connection.query(sql, (err, results) => {
           if (err) {
             res.send({
               code: 10001,
@@ -251,8 +256,28 @@ module.exports.my_homeworkDetail = function (req, res) {
             info: results[0],
             msg: '获取成功！'
           })
-        }
-      )
+        })
+      } else {
+        // 未批改
+        connection.query(
+          `select title, info, protocol from sys_homework_list where id=${homework_id}`,
+          (err, results) => {
+            if (err) {
+              res.send({
+                code: 10001,
+                info: null,
+                msg: '[SELECT ERROR] - ' + err.message
+              })
+              return
+            }
+            res.send({
+              code: 200,
+              info: results[0],
+              msg: '获取成功！'
+            })
+          }
+        )
+      }
     } else {
       connection.query(`select * from sys_homework_list where id=${homework_id}`, (err, results) => {
         if (err) {
@@ -285,7 +310,7 @@ module.exports.my_homeworkDoneList = function (req, res) {
     })
   }
   const { page, pageSize, class_id, homework_id } = req.body
-  let sql = `select d.id, h.title, c.class_view, u.account, u.username, d.status from sys_done_list d inner join sys_class_list c on (d.class_id=c.class_id) inner join sys_user_info u on (u.account=d.account) inner join sys_homework_list h on (h.id=d.homework_id)`
+  let sql = `select d.id, h.title, d.homework_id, c.class_id, c.class_view, u.account, u.username, d.status from sys_done_list d inner join sys_class_list c on (d.class_id=c.class_id) inner join sys_user_info u on (u.account=d.account) inner join sys_homework_list h on (h.id=d.homework_id)`
   if (class_id || homework_id) {
     let classStr = ''
     let homeworkStr = ''

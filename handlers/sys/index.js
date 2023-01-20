@@ -3,7 +3,7 @@ const { sign_token, verify_token } = require('../../utils/token')
 module.exports.my_login = function (req, res) {
 	console.log('/sys/login')
 	const { account, psw } = req.body
-	const sql = `select username, account, psw, identity from sys_user_liao`
+	const sql = `select username, account, psw, identity, class_id from sys_user_liao`
 	connection.query(sql, (err, result) => {
 		if (err) {
 			res.send({
@@ -22,7 +22,8 @@ module.exports.my_login = function (req, res) {
 						userInfo: {
 							account: result[i].account,
 							username: result[i].username,
-							identity: result[i].identity
+							identity: result[i].identity,
+							class_id: result[i].class_id
 						},
 						token
 					},

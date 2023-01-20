@@ -85,8 +85,8 @@ module.exports.my_noticeUpdate = function (req, res) {
   const { id, author, title, info, date, protocol, account } = req.body
   if (id) {
     // 修改
-    console.log(protocol);
     const sql = `update sys_notice_list set author='${author}', title='${title}', info='${info}', date='${date}', protocol='${protocol || ''}', account='${account}' where id=${id}`
+    console.log(sql);
     connection.query(sql, (err, result) => {
       if (err) throw err
       res.send({

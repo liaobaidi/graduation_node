@@ -89,7 +89,7 @@ create table if not exists `sys_done_list`
 `id` int not null auto_increment comment '唯一标识' primary key,
 `account` varchar(16) not null comment '学号',
 `date` varchar(32) not null comment '完成日期',
-`homework_id` varchar(16) not null comment '作业ID',
+`homework_id` int not null comment '作业ID',
 `protocol` varchar(256) null comment '附件',
 `class_id` int comment '班级ID',
 `score` varchar(16) null comment '成绩',
