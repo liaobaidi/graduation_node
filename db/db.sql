@@ -104,3 +104,33 @@ create table if not exists `sys_class_list`
 `class_id` varchar(16) not null comment '班级ID',
 `class_view` varchar(32) not null comment '班级名称'
 ) comment '班级列表';
+
+-- 评论列表
+create table if not exists `sys_comment_list`
+(
+`id` int not null auto_increment comment 'ID' primary key,
+`account` varchar(32) not null comment '学号/工号',
+`video_id` int not null comment '视频ID',
+`info` text not null comment '评论内容',
+`date` varchar(256) not null comment '用户名'
+) comment '评论列表';
+
+-- 视频列表
+create table if not exists `sys_video_list`
+(
+`id` int not null auto_increment comment '视频ID' primary key,
+`account` varchar(32) not null comment '工号',
+`name` text not null comment '视频名称',
+`url` text not null comment '视频链接',
+`cover` text not null comment '视频封面',
+`date` varchar(256) not null comment '发布日期'
+) comment '视频列表';
+
+-- 资料列表
+create table if not exists `sys_file_list`
+(
+`id` int not null auto_increment comment 'ID' primary key,
+`name` varchar(256) not null comment '资料名称',
+`url` text not null comment '资料地址',
+`download_count` int not null comment '下载次数'
+) comment '资料列表';

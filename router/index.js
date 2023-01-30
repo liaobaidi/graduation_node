@@ -8,7 +8,7 @@ const {
   my_userInfo,
   my_userUpdate
 } = require('../handlers/user')
-const { uploadFile, uploadProtocol } = require('../handlers/utils')
+const { uploadFile, uploadProtocol, uploadVideo } = require('../handlers/utils')
 const {
   my_experimentlist,
   my_appointExperiment,
@@ -21,7 +21,26 @@ const {
   my_experienceAdd
 } = require('../handlers/experiment')
 const { my_noticeList, my_noticeInfo, my_noticeUpdate } = require('../handlers/message')
-const { my_homeworkList, my_homeworkSaveOrUpdate, my_homeworkCheck, my_homeworkCommit, my_homeworkDetail, my_homeworkDoneList } = require('../handlers/homework')
+const {
+  my_homeworkList,
+  my_homeworkSaveOrUpdate,
+  my_homeworkCheck,
+  my_homeworkCommit,
+  my_homeworkDetail,
+  my_homeworkDoneList
+} = require('../handlers/homework')
+const {
+  my_fileList,
+  my_addOrUpdateFile,
+  my_downloadAdd,
+  my_deleteFile,
+  my_fileInfo,
+  my_videoList,
+  my_videoInfo,
+  my_deleteVideo,
+  my_addOrUpdate
+} = require('../handlers/datamange')
+const { my_commentList, my_commentInfo, my_deleteComment, my_addOrUpdateComment } = require('../handlers/comment')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -172,5 +191,75 @@ module.exports.createRouter = function (app, express) {
    * 已完成列表
    */
   router.post('/homework/done/list', (req, res) => my_homeworkDoneList(req, res))
+
+  /**
+   * 视频上传
+   */
+  router.post('/upload/video', (req, res) => uploadVideo(req, res))
+
+  /**
+   * 资料列表
+   */
+  router.post('/file/list', (req, res) => my_fileList(req, res))
+
+  /**
+   * 添加或修改资料
+   */
+  router.post('/file/addOrUpdate', (req, res) => my_addOrUpdateFile(req, res))
+
+  /**
+   * 下载次数添加
+   */
+  router.post('/download/add', (req, res) => my_downloadAdd(req, res))
+
+  /**
+   * 删除文件
+   */
+  router.post('/file/delete', (req, res) => my_deleteFile(req, res))
+
+  /**
+   * 资料详情
+   */
+  router.post('/file/info', (req, res) => my_fileInfo(req, res))
+
+  /**
+   * 视频列表
+   */
+  router.post('/video/list', (req, res) => my_videoList(req, res))
+
+  /**
+   * 视频详情
+   */
+  router.post('/video/info', (req, res) => my_videoInfo(req, res))
+
+  /**
+   * 删除视频
+   */
+  router.post('/video/delete', (req, res) => my_deleteVideo(req, res))
+
+  /**
+   * 添加或修改视频
+   */
+  router.post('/video/addOrUpdate', (req, res) => my_addOrUpdate(req, res))
+
+  /**
+   * 评论列表
+   */
+  router.post('/comment/list', (req, res) => my_commentList(req, res))
+
+  /**
+   * 评论详情
+   */
+  router.post('/comment/info', (req, res) => my_commentInfo(req, res))
+
+  /**
+   * 删除评论
+   */
+  router.post('/comment/delete', (req, res) => my_deleteComment(req, res))
+
+  /**
+   * 添加或修改评论
+   */
+  router.post('/comment/addOrUpdate', (req, res) => my_addOrUpdateComment(req, res))
   return router
 }
