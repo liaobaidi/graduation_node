@@ -281,16 +281,15 @@ module.exports.my_userUpdate = function (req, res) {
     return
   } else {
     // 插入信息
-    connection.query(`select id from sys_user_info`, (err, results) => {
-      const nextId = results[results.length - 1].id + 1
-      const sql = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${nextId}, '${username || ''}', '${gender || '1'}', '${email || ''}', '${phone || ''}', '${brith || ""}', '${url || ''}', '${data.account}')`
-      console.log(sql)
-      connection.query(sql, () => {
-        res.send({
-          code: 200,
-          info: true,
-          msg: '修改成功！'
-        })
+    const sql = `insert into sys_user_info (username, gender, email, phone, brith, url, account) values ('${
+      username || ''
+    }', '${gender || '1'}', '${email || ''}', '${phone || ''}', '${brith || ''}', '${url || ''}', '${data.account}')`
+    console.log(sql)
+    connection.query(sql, () => {
+      res.send({
+        code: 200,
+        info: true,
+        msg: '修改成功！'
       })
     })
   }
