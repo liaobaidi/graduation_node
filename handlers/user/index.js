@@ -237,8 +237,8 @@ module.exports.my_userInfo = function (req, res) {
       msg: 'token失效'
     })
   }
-  const { account } = req.body
-  const sql = `select * from sys_user_info where account='${account}'`
+  // const { account } = req.body
+  const sql = `select * from sys_user_info where account='${data.account}'`
   connection.query(sql, (err, results) => {
     if (err) {
       return res.send({

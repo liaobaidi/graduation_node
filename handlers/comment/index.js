@@ -13,8 +13,11 @@ module.exports.my_commentList = function (req, res) {
       msg: 'token失效'
     })
   }
-  const { page, pageSize } = req.body
-  const sql = `select c.id, c.info, c.date, u.username, v.name from sys_comment_list c inner join sys_user_info u on (c.account=u.account) inner join sys_video_list v on (c.video_id=v.id) order by c.date desc, c.info asc`
+  const { page, pageSize, video_id } = req.body
+  let sql = `select c.id, c.info, c.date, u.username, u.account, u.url, v.name from sys_comment_list c inner join sys_user_info u on (c.account=u.account) inner join sys_video_list v on (c.video_id=v.id) order by c.date desc, c.info asc`
+  if(video_id) {
+    sql = `select c.id, c.info, c.date, u.username, u.account, u.url, v.name from sys_comment_list c inner join sys_user_info u on (c.account=u.account) inner join sys_video_list v on (c.video_id=v.id) where video_id=${video_id} order by c.date desc, c.info asc`
+  }
   connection.query(sql, (err, result) => {
     if (err) {
       res.send({
@@ -56,7 +59,7 @@ module.exports.my_commentInfo = function (req, res) {
   }
   const { id } = req.body
   connection.query(
-    `select c.id, c.info, c.date, u.username, v.name from sys_comment_list c inner join sys_user_info u on (c.account=u.account) inner join sys_video_list v on (c.video_id=v.id) where v.id=${id}`,
+    `select c.id, c.info, c.date, u.username, v.name from sys_comment_list c inner join sys_user_info u on (c.account=u.account) inner join sys_video_list v on (c.video_id=v.id) where c.id=${id}`,
     (err, result) => {
       if (err) {
         res.send({

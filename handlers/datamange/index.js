@@ -15,8 +15,10 @@ module.exports.my_fileList = function (req, res) {
   }
   const { page, pageSize, keyWord } = req.body
   let keys = ''
-  if (keyWord) keys = `%${keyWord.split('').join('%')}%`
-  const sql = `select * from sys_file_list ${keys ? 'where name like ' + keys : ''} order by download_count desc, name asc`
+  if (keyWord) keys = `%${keyWord}%`
+  const sql = `select * from sys_file_list ${
+    keys ? "where name like '" + keys + "'" : ''
+  } order by download_count desc, name asc`
   connection.query(sql, (err, result) => {
     if (err) {
       res.send({
@@ -177,10 +179,11 @@ module.exports.my_videoList = function (req, res) {
   }
   const { page, pageSize, keyWord } = req.body
   let keys = ''
-  if (keyWord) keys = `%${keyWord.split('').join('%')}%`
+  if (keyWord) keys = `%${keyWord}%`
   const sql = `select v.id, u.account, u.username, v.name, v.url, v.cover, v.date from sys_video_list v inner join sys_user_info u on (u.account=v.account) ${
-    keys ? 'where v.name like ' + keys : ''
+    keys ? "where v.name like '" + keys + "'" : ''
   } order by v.date desc`
+  console.log(sql)
   connection.query(sql, (err, result) => {
     if (err) {
       res.send({
@@ -221,21 +224,24 @@ module.exports.my_videoInfo = function (req, res) {
     })
   }
   const { id } = req.body
-  connection.query(`select * from sys_video_list where id=${id}`, err => {
-    if (err) {
+  connection.query(
+    `select v.id, u.account, u.username, v.name, v.url, v.cover, v.date from sys_video_list v inner join sys_user_info u on (u.account=v.account) where v.id=${id}`,
+    (err, result) => {
+      if (err) {
+        res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+        return
+      }
       res.send({
-        code: 10001,
-        info: null,
-        msg: '[SELECT ERROR] - ' + err.message
+        code: 200,
+        info: result[0],
+        msg: '获取成功！'
       })
-      return
     }
-    res.send({
-      code: 200,
-      info: true,
-      msg: '获取成功！'
-    })
-  })
+  )
 }
 
 module.exports.my_addOrUpdate = function (req, res) {
@@ -255,7 +261,7 @@ module.exports.my_addOrUpdate = function (req, res) {
     connection.query(
       `update sys_video_list set name='${name}', url='${url}', cover='${cover}', account='${
         data.account
-      }', date='${dayjs().format('YYYY-MM-DD HH:mm:ss')}'`,
+      }', date='${dayjs().format('YYYY-MM-DD HH:mm:ss')}' where id=${id}`,
       err => {
         if (err) throw err
         res.send({
