@@ -24,6 +24,8 @@ create table if not exists `sys_user_info`
 `email` varchar(32) not null comment '邮箱',
 `phone` varchar(11) null comment '联系电话',
 `brith` date not null comment '生日',
+`url` varchar(255) null comment '头像',
+`account` varchar(16) not null comment '账号',
 `class_id` int comment '班级ID'
 ) comment '用户详情表';
 
