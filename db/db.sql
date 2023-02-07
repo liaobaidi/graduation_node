@@ -61,7 +61,8 @@ create table if not exists `sys_notice_list`
 `author` varchar(16) not null comment '作者',
 `info` text not null comment '内容',
 `date` varchar(32) not null comment '日期',
-`protocol` varchar(256) null comment '附件'
+`protocol` varchar(256) null comment '附件',
+`account` varchar(16) not null comment '账号'
 ) comment '公告列表';
 
 -- 实验列表
