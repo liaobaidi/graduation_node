@@ -301,7 +301,7 @@ module.exports.my_deleteVideo = function (req, res) {
     })
   }
   const { id } = req.body
-  connection.query(`delete from sys_video_list where id=${id}`, err => {
+  connection.query(`delete v, c from sys_video_list v left join sys_comment_list c on (v.id=c.video_id) where v.id=${id}`, err => {
     if (err) throw err
     res.send({
       code: 200,

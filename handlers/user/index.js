@@ -4,6 +4,7 @@ const path = require('path')
 const xlsx = require('node-xlsx').default
 const multiparty = require('multiparty')
 const fs = require('fs')
+const dayjs = require('dayjs')
 module.exports.my_userlist = function (req, res) {
   console.log('/user/list')
   const { authorization } = req.headers
@@ -126,10 +127,14 @@ module.exports.my_userInsert = function (req, res) {
     const sql2 = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${nextId},'${account}', '${username}', '000000', ${class_id}, '${identity}');`
     console.log(sql2)
     connection.query(sql2, () => {
-      res.send({
-        code: 200,
-        info: true,
-        msg: '添加成功！'
+      const sql3 = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${nextId},'${username}', '', '', '', '${dayjs().format('YYYY-MM-DD')}', '', '${account}')`
+      console.log(sql3);
+      connection.query(sql3, () => {
+        res.send({
+          code: 200,
+          info: true,
+          msg: '添加成功！'
+        })
       })
     })
   })
@@ -164,6 +169,13 @@ module.exports.my_listInsert = function (req, res) {
     const admins = list[0].data.filter(item => item[4] === 'admin')
     const teachers = list[0].data.filter(item => item[4] === 'teacher')
     const students = list[0].data.filter(item => item[4] === 'student')
+    if (!admins || !admins.length || !teachers || !teachers.length || !students || !students.length) {
+      return res.send({
+        code: 10001,
+        info: null,
+        msg: 'Excel格式解析错误'
+      })
+    }
     console.log(admins, teachers, students)
     connection.query(`select id, identity from sys_user_liao`, (err, result) => {
       if (err) {
@@ -180,18 +192,24 @@ module.exports.my_listInsert = function (req, res) {
         const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${admin_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
         console.log(sql)
         await connection.query(sql)
+        const sql2 = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${admin_id},'${item[1]}', '', '', '', '${dayjs().format('YYYY-MM-DD')}', '', '${item[0]}')`
+        await connection.query(sql2)
         admin_id++
       })
       teachers.forEach(async item => {
         const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${teacher_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
         console.log(sql)
         await connection.query(sql)
+        const sql2 = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${teacher_id},'${item[1]}', '', '', '', '${dayjs().format('YYYY-MM-DD')}', '', '${item[0]}')`
+        await connection.query(sql2)
         teacher_id++
       })
       students.forEach(async item => {
         const sql = `insert into sys_user_liao (id, account ,username, psw, class_id, identity ) values (${student_id}, '${item[0]}', '${item[1]}', '${item[2]}', ${item[3]}, '${item[4]}')`
         console.log(sql)
         await connection.query(sql)
+        const sql2 = `insert into sys_user_info (id, username, gender, email, phone, brith, url, account) values (${student_id},'${item[1]}', '', '', '', '${dayjs().format('YYYY-MM-DD')}', '', '${item[0]}')`
+        await connection.query(sql2)
         student_id++
       })
     })
@@ -210,7 +228,7 @@ module.exports.my_deleteUser = function (req, res) {
     })
   }
   const { id } = req.body
-  const sql = `delete from sys_user_liao where id=${id}`
+  const sql = `delete u, i from sys_user_liao u left join sys_user_info i on (u.account=i.account) where u.id=${id}`
   connection.query(sql, (err, result) => {
     if (err) {
       return res.send({
@@ -283,7 +301,7 @@ module.exports.my_userUpdate = function (req, res) {
     // 插入信息
     const sql = `insert into sys_user_info (username, gender, email, phone, brith, url, account) values ('${
       username || ''
-    }', '${gender || '1'}', '${email || ''}', '${phone || ''}', '${brith || ''}', '${url || ''}', '${data.account}')`
+    }', '${gender || '1'}', '${email || ''}', '${phone || ''}', '${brith || dayjs().format('YYYY-MM-DD')}', '${url || ''}', '${data.account}')`
     console.log(sql)
     connection.query(sql, () => {
       res.send({
