@@ -4,9 +4,6 @@ const { myUse } = require('./plugins/middleware.js')
 // 定时任务
 require('./handlers/timer')
 
-// 健康监听
-require('./plugins/watch.js')
-
 const app = express()
 
 myUse(app, express)
