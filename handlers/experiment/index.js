@@ -57,7 +57,7 @@ module.exports.my_appointExperiment = function (req, res) {
       msg: 'token失效'
     })
   }
-  const { ID, key } = req.body
+  const { ID, key, appoint_count } = req.body
   const sql = `select * from sys_experiment_list where ID=${ID}`
   console.log(sql)
   connection.query(sql, (err, results) => {
@@ -69,18 +69,16 @@ module.exports.my_appointExperiment = function (req, res) {
       })
       return
     }
-    let updateObj = {}
-    for (let i = 0; i < results.length; i++) {
-      if (results[i].ID === ID) {
-        if (data.identity === 'student') {
-          results[i][key]--
-          updateObj = results[i]
-        } else {
-          results[i][key] = 0
-          updateObj = results[i]
-        }
-      }
+    const updateObj = results[0]
+    if (updateObj[key] < appoint_count) {
+      res.send({
+        code: 10001,
+        info: null,
+        msg: '设备数量不足'
+      })
+      return
     }
+    updateObj[key] -= appoint_count
     const updateSql = `update sys_experiment_list set ${key}=${updateObj[key]} where ID=${updateObj.ID}`
     connection.query(updateSql, (err, results) => {
       if (err) {
@@ -91,23 +89,12 @@ module.exports.my_appointExperiment = function (req, res) {
         })
         return
       }
-      connection.query(`select * from sys_appointment_list`, (err, results_data) => {
-        if (err) {
-          res.send({
-            code: 10001,
-            info: null,
-            msg: '[SELECT ERROR] - ' + err.message
-          })
-          return
-        }
-        const nextId = results_data.length ? ++results_data[results_data.length - 1].id : 1000
-        const sql = `insert into sys_appointment_list (id, account, course, time, name) values (${nextId}, '${data.account}', '${key}', '${updateObj.time}', '${updateObj.name}')`
-        connection.query(sql, () => {
-          res.send({
-            code: 200,
-            info: true,
-            msg: '预约成功！'
-          })
+      const sql = `insert into sys_appointment_list (account, course, time, name, appoint_count) values ('${data.account}', '${key}', '${updateObj.time}', '${updateObj.name}', '${appoint_count}')`
+      connection.query(sql, () => {
+        res.send({
+          code: 200,
+          info: true,
+          msg: '预约成功！'
         })
       })
     })
@@ -155,32 +142,43 @@ module.exports.my_cancelAppoint = function (req, res) {
     })
   }
   const { ID, name, key, time } = req.body
-  connection.query(`select ${key} from sys_experiment_list where ID=${ID}`, (err, results) => {
-    if (err) {
-      res.send({
-        code: 10001,
-        info: null,
-        msg: '[SELECT ERROR] - ' + err.message
-      })
-      return
-    }
-    let sql = ''
-    if (data.identity === 'student') {
-      sql = `update sys_experiment_list set ${key}=${results[0] + 1}`
-    } else {
-      sql = `update sys_experiment_list set ${key}=50`
-    }
-    connection.query(sql, () => {
-      const my_sql = `delete from sys_appointment_list where account='${data.account}' and name='${name}' and time='${time}' and course='${key}'`
-      connection.query(my_sql, () => {
-        res.send({
-          code: 200,
-          info: true,
-          msg: '取消成功！'
+  connection.query(
+    `select appoint_count from sys_appointment_list where name='${name}' and time='${time}' and course='${key}'`,
+    (err, results) => {
+      if (err) {
+        return res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+      }
+      const appoint_count = results[0].appoint_count
+      connection.query(`select ${key} from sys_experiment_list where ID=${ID}`, (err, keys) => {
+        if (err) {
+          return res.send({
+            code: 10001,
+            info: null,
+            msg: '[SELECT ERROR] - ' + err.message
+          })
+        }
+        const leave_count = keys[0][key]
+        connection.query(`update sys_experiment_list set ${key}=${leave_count + appoint_count}`, err => {
+          if (err) throw err
+          connection.query(
+            `delete from sys_appointment_list where name='${name}' and time='${time}' and course='${key}'`,
+            err => {
+              if (err) throw err
+              res.send({
+                code: 200,
+                info: true,
+                msg: '取消成功！'
+              })
+            }
+          )
         })
       })
-    })
-  })
+    }
+  )
 }
 
 module.exports.my_appointCancel = function (req, res) {
@@ -195,24 +193,38 @@ module.exports.my_appointCancel = function (req, res) {
     })
   }
   const { id, key, name, time } = req.body
-  connection.query(`delete from sys_appointment_list where id=${id}`, err => {
-    if (err) throw err
-    connection.query(`select * from sys_experiment_list where name='${name}' and time='${time}'`, (err, results) => {
-      if (err) throw err
-      let sql = ''
-      if (data.identity === 'student') {
-        sql = `update sys_experiment_list set ${key}=${results[0][key] + 1} where name='${name}' and time='${time}'`
-      } else {
-        sql = `update sys_experiment_list set ${key}=50 where name='${name}' and time='${time}'`
-      }
-      connection.query(sql, err => {
-        if (err) throw err
-        res.send({
-          code: 200,
-          info: true,
-          msg: '取消成功！'
-        })
+  connection.query(`select appoint_count from sys_appointment_list where id=${id}`, (err, counts) => {
+    if (err) {
+      return res.send({
+        code: 10001,
+        info: null,
+        msg: '[SELECT ERROR] - ' + err.message
       })
+    }
+    const appoint_count = counts[0].appoint_count
+    connection.query(`select * from sys_experiment_list where name='${name}' and time='${time}'`, (err, results) => {
+      if (err) {
+        return res.send({
+          code: 10001,
+          info: null,
+          msg: '[SELECT ERROR] - ' + err.message
+        })
+      }
+      const leave_count = results[0][key]
+      connection.query(
+        `update sys_experiment_list set ${key}=${leave_count + appoint_count} where name='${name}' and time='${time}'`,
+        err => {
+          if (err) throw err
+          connection.query(`delete from sys_appointment_list where id=${id}`, err => {
+            if (err) throw err
+            res.send({
+              code: 200,
+              info: true,
+              msg: '取消成功！'
+            })
+          })
+        }
+      )
     })
   })
 }
@@ -294,7 +306,7 @@ module.exports.my_experienceList = function (req, res) {
   }
   const { page, pageSize, id } = req.body
   let sql = `select * from sys_experience_list order by createTime desc`
-  if(id) {
+  if (id) {
     sql = `select * from sys_experience_list where id=${id} order by createTime desc`
   }
   connection.query(sql, (err, result) => {

@@ -50,7 +50,8 @@ create table if not exists `sys_appointment_list`
 `account` varchar(16) not null comment '学号',
 `course` varchar(16) not null comment '课时',
 `time` varchar(16) not null comment '日期',
-`name` varchar(16) not null comment '实验室名称'
+`name` varchar(16) not null comment '实验室名称',
+`appoint_count` int not null comment '预约台数'
 ) comment '已预约列表';
 
 -- 公告列表
