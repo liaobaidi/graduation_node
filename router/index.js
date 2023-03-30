@@ -41,6 +41,15 @@ const {
   my_addOrUpdate
 } = require('../handlers/datamange')
 const { my_commentList, my_commentInfo, my_deleteComment, my_addOrUpdateComment } = require('../handlers/comment')
+const {
+  my_courseList,
+  my_importCourse,
+  my_signInStart,
+  my_signInEnd,
+  my_signIn,
+  my_signInStatus,
+  my_signInNum
+} = require('../handlers/course')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -261,5 +270,40 @@ module.exports.createRouter = function (app, express) {
    * 添加或修改评论
    */
   router.post('/comment/addOrUpdate', (req, res) => my_addOrUpdateComment(req, res))
+
+  /**
+   * 课程表
+   */
+  router.post('/course/list', (req, res) => my_courseList(req, res))
+
+  /**
+   * 导入课程表
+   */
+  router.post('/course/import', (req, res) => my_importCourse(req, res))
+
+  /**
+   * 开始签到
+   */
+  router.post('/course/sigin/start', (req, res) => my_signInStart(req, res))
+
+  /**
+   * 结束签到
+   */
+  router.post('/course/signin/end', (req, res) => my_signInEnd(req, res))
+
+  /**
+   * 签到
+   */
+  router.post('/course/signin', (req, res) => my_signIn(req, res))
+
+  /**
+   * 签到状态
+   */
+  router.post('/course/signin/status', (req, res) => my_signInStatus(req, res))
+
+  /**
+   * 获取签到人数
+   */
+  router.post('/course/signin/num', (req, res) => my_signInNum(req, res))
   return router
 }

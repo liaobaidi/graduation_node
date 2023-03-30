@@ -106,7 +106,8 @@ create table if not exists `sys_class_list`
 (
 `id` int not null auto_increment comment '唯一标识' primary key,
 `class_id` varchar(16) not null comment '班级ID',
-`class_view` varchar(32) not null comment '班级名称'
+`class_view` varchar(32) not null comment '班级名称',
+`class_count` int not null comment '班级人数'
 ) comment '班级列表';
 
 -- 评论列表
@@ -138,3 +139,30 @@ create table if not exists `sys_file_list`
 `url` text not null comment '资料地址',
 `download_count` int not null comment '下载次数'
 ) comment '资料列表';
+
+-- 课程
+create table if not exists `sys_course_list`
+(
+  `id` int not null auto_increment comment 'ID' primary key,
+  `course_id` varchar(256) not null comment '课程编号',
+  `course_name` varchar(256) not null comment '课程名称',
+  `teacher_id` varchar(16) not null comment '教师',
+  `class_id` varchar(16) not null comment '班级',
+  `time` varchar(256) not null comment '日期',
+  `course_time` varchar(256) not null comment '课时标识',
+  `course_view` varchar(256) not null comment '课时展示',
+  `sign_in` int null comment '是否签到',
+  `sign_psw` varchar(256) null comment '签到密码',
+  `experiment_id` varchar(256) not null comment '实验室ID'
+) comment '课程表';
+
+-- 签到表
+create table if not exists `sys_sign_list`
+(
+  `id` int not null auto_increment comment 'ID' primary key,
+  `student_id` varchar(16) not null comment '学生学号',
+  `course_id` varchar(256) not null comment '课程编号',
+  `class_id` varchar(16) not null comment '班级',
+  `time` varchar(256) not null comment '日期',
+  `course_time` varchar(256) not null comment '课时标识'
+) comment '签到表';
