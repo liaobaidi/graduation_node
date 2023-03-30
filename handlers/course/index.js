@@ -174,6 +174,13 @@ module.exports.my_signIn = function (req, res) {
     `select sign_psw from sys_course_list where class_id='${class_id}' and course_id='${course_id}' and sign_in=1`,
     (err, sign_psws) => {
       if (err) throw err
+      if(!sign_psws.length) {
+        return res.send({
+          code: 10001,
+          info: null,
+          msg: '签到已结束'
+        })
+      }
       if (sign_psws[0].sign_psw !== sign_psw) {
         return res.send({
           code: 10001,
