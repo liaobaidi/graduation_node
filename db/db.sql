@@ -84,7 +84,8 @@ create table if not exists `sys_homework_list`
 `info` text not null comment '内容',
 `protocol` varchar(256) null comment '附件',
 `class_id` int null comment '班级ID',
-`date` varchar(32) not null comment '截至日期'
+`date` varchar(32) not null comment '截至日期',
+`course_id` varchar(256) not null comment '课程编号'
 ) comment '作业列表';
 
 -- 已完成列表

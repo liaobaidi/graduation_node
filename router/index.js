@@ -27,7 +27,9 @@ const {
   my_homeworkCheck,
   my_homeworkCommit,
   my_homeworkDetail,
-  my_homeworkDoneList
+  my_homeworkDoneList,
+  my_homeworkCount,
+  my_homeworkCountTotal
 } = require('../handlers/homework')
 const {
   my_fileList,
@@ -48,7 +50,10 @@ const {
   my_signInEnd,
   my_signIn,
   my_signInStatus,
-  my_signInNum
+  my_signInNum,
+  my_signInCount,
+  my_courseForTeacher,
+  my_courseClassList
 } = require('../handlers/course')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
@@ -305,5 +310,30 @@ module.exports.createRouter = function (app, express) {
    * 获取签到人数
    */
   router.post('/course/signin/num', (req, res) => my_signInNum(req, res))
+
+  /**
+   * 考勤统计
+   */
+  router.post('/course/signin/count', (req, res) => my_signInCount(req, res))
+
+  /**
+   * 课程选择
+   */
+  router.post('/course/list/teach', (req, res) => my_courseForTeacher(req, res))
+
+  /**
+   * 获取班级
+   */
+  router.post('/course/class/list', (req, res) => my_courseClassList(req, res))
+
+  /**
+   * 作业统计
+   */
+  router.post('/homework/count', (req, res) => my_homeworkCount(req, res))
+
+  /**
+   * 作业统计列表
+   */
+  router.post('/homework/count/total', (req, res) => my_homeworkCountTotal(req, res))
   return router
 }

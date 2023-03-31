@@ -63,7 +63,7 @@ module.exports.uploadProtocol = function (req, res) {
       return
     }
     const inputFile = files.file[0]
-    console.log(inputFile.path);
+    console.log(inputFile.path)
     const newPath = path.join(__dirname, '../../public', 'protocol') + '\\' + inputFile.originalFilename //oldPath  不得作更改，使用默认上传路径就好
     // 同步重命名文件名 fs.renameSync(oldPath, newPath)
     const file_data = fs.readFileSync(inputFile.path)
@@ -101,7 +101,7 @@ module.exports.uploadVideo = function (req, res) {
       return
     }
     const inputFile = files.file[0]
-    console.log(inputFile.path);
+    console.log(inputFile.path)
     const newPath = path.join(__dirname, '../../public', 'videos') + '\\' + inputFile.originalFilename //oldPath  不得作更改，使用默认上传路径就好
     // 同步重命名文件名 fs.renameSync(oldPath, newPath)
     const file_data = fs.readFileSync(inputFile.path)

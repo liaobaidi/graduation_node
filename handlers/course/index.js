@@ -174,7 +174,7 @@ module.exports.my_signIn = function (req, res) {
     `select sign_psw from sys_course_list where class_id='${class_id}' and course_id='${course_id}' and sign_in=1`,
     (err, sign_psws) => {
       if (err) throw err
-      if(!sign_psws.length) {
+      if (!sign_psws.length) {
         return res.send({
           code: 10001,
           info: null,
@@ -259,4 +259,117 @@ module.exports.my_signInNum = function (req, res) {
       })
     }
   )
+}
+
+module.exports.my_signInCount = function (req, res) {
+  console.log('/course/signin/count')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { course_id, class_ids } = req.body
+  const class_list = class_ids.split(',')
+  connection.query(
+    `select distinct c.course_id, c.course_name, l.class_id, l.class_view, u.username, c.time, c.course_view from sys_sign_list s inner join sys_course_list c on (s.course_id=c.course_id) inner join sys_user_info u on (s.student_id=u.account) inner join sys_class_list l on (s.class_id=l.class_id) where c.course_id='${course_id}'`,
+    (err, results) => {
+      if (err) throw err
+      connection.query(`select * from sys_class_list`, (error, result) => {
+        if (error) throw error
+        const classes = []
+        const data = []
+        for (let i = 0; i < class_list.length; i++) {
+          data.push(...results.filter(item => item.class_id === class_list[i]))
+          classes.push(...result.filter(item => item.class_id === class_list[i]))
+        }
+        const countObj = {}
+        for (let i = 0; i < data.length; i++) {
+          if (countObj[data[i].time]) {
+            countObj[data[i].time]++
+          } else {
+            countObj[data[i].time] = 1
+          }
+        }
+        const xData = Object.keys(countObj)
+        const yData = Object.values(countObj)
+        const yMax = classes.reduce((sum, item) => (sum += item.class_count), 0)
+        res.send({
+          code: 200,
+          info: {
+            xData,
+            yData,
+            yMax,
+            data
+          },
+          msg: 'success'
+        })
+      })
+    }
+  )
+}
+
+module.exports.my_courseForTeacher = function (req, res) {
+  console.log('/course/list/teach')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { teacher_id } = req.body
+  connection.query(
+    `select course_id, course_name from sys_course_list where teacher_id='${teacher_id}'`,
+    (err, results) => {
+      if (err) throw err
+      const courseObj = []
+      results.forEach(item => {
+        courseObj.push({
+          label: item.course_name,
+          value: item.course_id
+        })
+      })
+      const map = new Map()
+      const unique_course = courseObj.filter(v => !map.has(v.value) && map.set(v.value, 1))
+      res.send({
+        code: 200,
+        info: unique_course,
+        msg: 'success'
+      })
+    }
+  )
+}
+
+module.exports.my_courseClassList = function (req, res) {
+  console.log('/course/class/list')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  connection.query(`select * from sys_class_list`, (err, results) => {
+    if (err) throw err
+    const classObj = []
+    results.forEach(item => {
+      classObj.push({
+        label: item.class_view,
+        value: item.class_id
+      })
+    })
+    res.send({
+      code: 200,
+      info: classObj,
+      msg: 'success'
+    })
+  })
 }

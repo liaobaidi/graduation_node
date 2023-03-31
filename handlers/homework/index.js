@@ -16,15 +16,15 @@ module.exports.my_homeworkList = function (req, res) {
   const { page, pageSize, class_id } = req.body
   let sql = ''
   if (data.identity === 'teacher') {
-    sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) where u.account='${
+    sql = `select distinct h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username, d.course_name from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) inner join sys_course_list d on (h.course_id=d.course_id) where u.account='${
       data.account
     }' ${class_id ? 'and h.class_id=' + class_id : ''} order by h.date asc`
   } else if (data.identity === 'admin') {
-    sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) ${
+    sql = `select distinct h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username, d.course_name from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) inner join sys_course_list d on (h.course_id=d.course_id) ${
       class_id ? 'where h.class_id=' + class_id : ''
     } order by h.date asc`
   } else {
-    sql = `select h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) where h.class_id=${class_id} order by h.date asc`
+    sql = `select distinct h.id, h.title, h.info, h.date, h.protocol, c.class_view, u.username, d.course_name from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_user_liao u on (h.author_id=u.account) inner join sys_course_list d on (h.course_id=d.course_id) where h.class_id=${class_id} order by h.date asc`
   }
   connection.query(sql, (err, result) => {
     if (err) {
@@ -65,10 +65,10 @@ module.exports.my_homeworkSaveOrUpdate = function (req, res) {
       msg: 'token失效'
     })
   }
-  const { id, title, info, protocol, class_id, account, date } = req.body
+  const { id, title, info, protocol, class_id, account, date, course_id } = req.body
   if (id) {
     // 修改作业
-    const sql = `update sys_homework_list set author_id='${account}', title='${title}', info='${info}', protocol='${protocol}', class_id=${class_id}, date='${date}' where  id=${id}`
+    const sql = `update sys_homework_list set author_id='${account}', title='${title}', info='${info}', protocol='${protocol}', class_id=${class_id}, date='${date}', course_id='${course_id}' where  id=${id}`
     connection.query(sql, err => {
       if (err) {
         res.send({
@@ -89,7 +89,7 @@ module.exports.my_homeworkSaveOrUpdate = function (req, res) {
     connection.query(`select id from sys_homework_list`, (err, ids) => {
       if (err) throw err
       const nextId = ids.length ? ids[ids.length - 1].id + 1 : 1000
-      const sql = `insert into sys_homework_list (id, title, info, protocol, class_id, author_id, date) values (${nextId}, '${title}', '${info}', '${protocol}', ${class_id}, '${account}', '${date}')`
+      const sql = `insert into sys_homework_list (id, title, info, protocol, class_id, author_id, date, course_id) values (${nextId}, '${title}', '${info}', '${protocol}', ${class_id}, '${account}', '${date}', '${course_id}')`
       connection.query(sql, error => {
         if (error) {
           res.send({
@@ -220,7 +220,7 @@ module.exports.my_homeworkDetail = function (req, res) {
   const { id, homework_id, status } = req.body
   if (id) {
     // 从作业已完成列表点进来的
-    const sql = `select h.title, h.info, c.class_view, u.account, u.username, d.protocol, d.score, d.desc from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_done_list d on (d.homework_id=h.id) inner join sys_user_liao u on (d.account=u.account) where d.id=${id}`
+    const sql = `select distinct h.title, h.info, c.class_view, u.account, u.username, d.protocol, d.score, d.desc, o.course_name from sys_homework_list h inner join sys_class_list c on (h.class_id=c.class_id) inner join sys_done_list d on (d.homework_id=h.id) inner join sys_user_liao u on (d.account=u.account) inner join sys_course_list o on (o.course_id=h.course_id) where d.id=${id}`
     connection.query(sql, (err, results) => {
       if (err) {
         res.send({
@@ -310,7 +310,7 @@ module.exports.my_homeworkDoneList = function (req, res) {
     })
   }
   const { page, pageSize, class_id, homework_id } = req.body
-  let sql = `select d.id, h.title, d.homework_id, c.class_id, c.class_view, u.account, u.username, d.status from sys_done_list d inner join sys_class_list c on (d.class_id=c.class_id) inner join sys_user_info u on (u.account=d.account) inner join sys_homework_list h on (h.id=d.homework_id)`
+  let sql = `select distinct d.id, o.course_name, h.title, d.homework_id, c.class_id, c.class_view, u.account, u.username, d.status from sys_done_list d inner join sys_class_list c on (d.class_id=c.class_id) inner join sys_user_info u on (u.account=d.account) inner join sys_homework_list h on (h.id=d.homework_id) inner join sys_course_list o on (o.course_id=h.course_id)`
   if (class_id || homework_id) {
     let classStr = ''
     let homeworkStr = ''
@@ -344,4 +344,77 @@ module.exports.my_homeworkDoneList = function (req, res) {
       msg: 'success'
     })
   })
+}
+
+module.exports.my_homeworkCount = function (req, res) {
+  console.log('/homework/count')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { class_id, course_id } = req.body
+  connection.query(
+    `select * from sys_homework_list where course_id='${course_id}' and class_id='${class_id}' order by date asc`,
+    (err, homeworks) => {
+      if (err) throw err
+      if (!homeworks.length) {
+        return res.send({
+          code: 10001,
+          info: null,
+          msg: '还未布置作业'
+        })
+      }
+      connection.query(`select * from sys_done_list where class_id='${class_id}'`, (error, dones) => {
+        if (error) throw error
+        connection.query(`select class_count from sys_class_list where class_id='${class_id}'`, (err, class_counts) => {
+          if (err) throw err
+          const yMax = class_counts[0].class_count
+          const xData = homeworks.map(item => item.title)
+          const homework_list = homeworks.map(item => item.id)
+          const yData = []
+          homework_list.forEach(id => {
+            yData.push(dones.filter(item => item.homework_id === id).length)
+          })
+          res.send({
+            code: 200,
+            info: {
+              xData,
+              yData,
+              yMax
+            }
+          })
+        })
+      })
+    }
+  )
+}
+
+module.exports.my_homeworkCountTotal = function (req, res) {
+  console.log('/homework/count/total')
+  const { authorization } = req.headers
+  const data = verify_token(authorization)
+  if (!data) {
+    return res.send({
+      code: 401,
+      info: null,
+      msg: 'token失效'
+    })
+  }
+  const { class_id, course_id } = req.body
+  connection.query(
+    `select distinct h.title, c.class_view, u.username, o.course_name, d.score from sys_done_list d inner join sys_homework_list h on (d.homework_id=h.id) inner join sys_user_info u on (d.account=u.account) inner join sys_class_list c on (d.class_id=c.class_id) inner join sys_course_list o on (o.course_id=h.course_id) where h.course_id='${course_id}' and d.class_id='${class_id}' and o.class_id='${class_id}'`,
+    (err, results) => {
+      if (err) throw err
+      res.send({
+        code: 200,
+        info: results,
+        msg: 'success'
+      })
+    }
+  )
 }
