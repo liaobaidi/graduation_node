@@ -275,7 +275,7 @@ module.exports.my_signInCount = function (req, res) {
   const { course_id, class_ids } = req.body
   const class_list = class_ids.split(',')
   connection.query(
-    `select distinct c.course_id, c.course_name, l.class_id, l.class_view, u.username, c.time, c.course_view from sys_sign_list s inner join sys_course_list c on (s.course_id=c.course_id) inner join sys_user_info u on (s.student_id=u.account) inner join sys_class_list l on (s.class_id=l.class_id) where c.course_id='${course_id}'`,
+    `select distinct c.course_id, c.course_name, l.class_id, l.class_view, u.username, s.time, c.course_view, s.course_time from sys_sign_list s inner join sys_course_list c on (s.course_id=c.course_id and s.class_id=c.class_id) inner join sys_user_info u on (s.student_id=u.account) inner join sys_class_list l on (s.class_id=l.class_id) where s.course_id='${course_id}'`,
     (err, results) => {
       if (err) throw err
       connection.query(`select * from sys_class_list`, (error, result) => {
