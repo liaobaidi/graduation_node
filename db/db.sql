@@ -26,7 +26,7 @@ create table if not exists `sys_user_info`
 `brith` date not null comment '生日',
 `url` varchar(255) null comment '头像',
 `account` varchar(16) not null comment '账号',
-`class_id` int comment '班级ID'
+`class_id` varchar(16) comment '班级ID'
 ) comment '用户详情表';
 
 -- 实验室列表
@@ -167,3 +167,13 @@ create table if not exists `sys_sign_list`
   `time` varchar(256) not null comment '日期',
   `course_time` varchar(256) not null comment '课时标识'
 ) comment '签到表';
+
+-- 成绩表
+create table if not exists `sys_grade_list`
+(
+  `id` int not null auto_increment comment 'ID' primary key,
+  `student_id` varchar(16) not null comment '学生学号',
+  `course_id` varchar(256) not null comment '课程编号',
+  `class_id` varchar(16) not null comment '班级',
+  `score` int not null comment '分数'
+) comment '成绩表';

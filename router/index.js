@@ -55,6 +55,12 @@ const {
   my_courseForTeacher,
   my_courseClassList
 } = require('../handlers/course')
+const {
+  my_terminalCount,
+  my_terminalGrade,
+  my_terminalGradeCount,
+  my_getTerminalGrade
+} = require('../handlers/teminal')
 module.exports.createRouter = function (app, express) {
   const router = express.Router()
 
@@ -335,5 +341,25 @@ module.exports.createRouter = function (app, express) {
    * 作业统计列表
    */
   router.post('/homework/count/total', (req, res) => my_homeworkCountTotal(req, res))
+
+  /**
+   * 期末信息统计
+   */
+  router.post('/terminal/count/list', (req, res) => my_terminalCount(req, res))
+
+  /**
+   * 期末评分
+   */
+  router.post('/terminal/count/grade', (req, res) => my_terminalGrade(req, res))
+
+  /**
+   * 期末成绩
+   */
+  router.post('/terminal/count', (req, res) => my_terminalGradeCount(req, res))
+
+  /**
+   * 成绩查询
+   */
+  router.post('/terminal/count/stu', (req, res) => my_getTerminalGrade(req, res))
   return router
 }
