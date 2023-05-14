@@ -194,7 +194,7 @@ module.exports.my_terminalGradeCount = function (req, res) {
     })
   }
   const { course_id, class_list, page, pageSize } = req.body
-  const sql = `select g.id, o.class_id, o.class_count, o.class_view, u.account, u.username, c.course_name, g.score from sys_grade_list g inner join sys_user_info u on (g.student_id=u.account) inner join sys_course_list c on (g.course_id=c.course_id and g.class_id=c.class_id) inner join sys_class_list o on (g.class_id=o.class_id) where g.course_id='${course_id}'`
+  const sql = `select distinct g.id, o.class_id, o.class_count, o.class_view, u.account, u.username, c.course_name, g.score from sys_grade_list g inner join sys_user_info u on (g.student_id=u.account) inner join sys_course_list c on (g.course_id=c.course_id and g.class_id=c.class_id) inner join sys_class_list o on (g.class_id=o.class_id) where g.course_id='${course_id}'`
   connection.query(sql, (err, results) => {
     if (err) throw err
     const data = []
